@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { PostsService } from './services/posts.service';
+import { SearchboxComponent } from './searchbox/searchbox.component';
+import {  switchMap } from "rxjs/operators";
 
 @Component({
   selector: 'app-root',
@@ -7,6 +9,8 @@ import { PostsService } from './services/posts.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+  @ViewChild('search', { static: true }) searchBox: SearchboxComponent;
+  //@ViewChild('search') searchBox: SearchboxComponent;
   // IMPORTANT UPDATE related with Angular 9:
   // You should use the object {static: true} as the second paramenter in the ViewChild decorator,
   // otherwise you'll get a runtime error.
@@ -17,8 +21,13 @@ export class AppComponent {
   public posts;
   constructor(private postsService: PostsService) { }
 
+  ngOnInit() {
+    this.searchBox.value
+    .pipe(switchMap(val => this.searchPosts(val)))
+    .subscribe(data => this.posts = data);
+  }
+
   public searchPosts(text) {
-    this.postsService.search(text)
-      .subscribe(data => this.posts = data);
+    return this.postsService.search(text);
   }
 }
